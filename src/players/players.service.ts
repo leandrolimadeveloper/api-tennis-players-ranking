@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { v4 as uuidV4 } from 'uuid'
 
 import { CreatePlayerDto } from './dtos/create-player.dto'
@@ -27,16 +27,36 @@ export class PlayersService {
         return this.players
     }
 
+    async getPlayer(email: string): Promise<Player> {
+        const player = this.players.find(player => player.email === email)
+
+        if (!player) {
+            throw new NotFoundException('Player not found')
+        }
+
+        return player
+    }
+
     async updatePlayerNameById(id: string, updatePlayerDto: UpdatePlayerDto): Promise<Player> {
         const player = this.players.find(player => player._id === id)
 
         if (!player) {
-            throw new BadRequestException('Player not found')
+            throw new NotFoundException('Player not found')
         }
 
         this.update(player, updatePlayerDto)
 
         return player
+    }
+
+    async deletePlayer(id: string): Promise<void> {
+        const player = this.players.find(player => player._id === id)
+
+        if (!player) {
+            throw new NotFoundException('Player not found')
+        }
+
+        this.players = this.players.filter(player => player._id !== id)
     }
 
     private create(createPlayerDto: CreatePlayerDto): void {
