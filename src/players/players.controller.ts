@@ -14,24 +14,24 @@ export class PlayersController {
         return await this.playersService.getAllPlayers()
     }
 
-    @Get(':email')
+    @Get(':id')
     async getPlayer(
-        @Param('email') email: string
+        @Param('id') id: string
     ): Promise<Player> {
-        return await this.playersService.getPlayer(email)
+        return await this.playersService.getPlayer(id)
     }
 
     @Patch(':id')
-    async updatePlayerNameById(
+    async updatePlayerById(
         @Param('id') id: string,
         @Body() updatePlayerDto: UpdatePlayerDto
     ) {
 
-        const player = await this.playersService.updatePlayerNameById(id, updatePlayerDto)
+        await this.playersService.updatePlayerById(id, updatePlayerDto)
 
         return {
             message: 'Player updated successfully',
-            player
+            updatePlayerDto
         }
     }
 

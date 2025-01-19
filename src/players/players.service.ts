@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { v4 as uuidV4 } from 'uuid'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
 
 import { CreatePlayerDto } from './dtos/create-player.dto'
 import { UpdatePlayerDto } from './dtos/update-player.dto'
@@ -7,28 +8,30 @@ import { Player } from './interfaces/player.interface'
 
 @Injectable()
 export class PlayersService {
-    private players: Player[] = []
+    constructor(@InjectModel('Player') private readonly playerModel: Model<Player>) { }
 
     private readonly logger = new Logger(PlayersService.name)
 
     async createPlayer(createPlayerDto: CreatePlayerDto): Promise<void> {
-        const player = this.players.find(player => player.email === createPlayerDto.email)
+        const { email } = createPlayerDto
+
+        const player = await this.playerModel.findOne({ email }).exec()
 
         if (player) {
             throw new BadRequestException('Player with this email already exists')
         }
 
-        this.logger.log(`Create player DTO: ${JSON.stringify(createPlayerDto)}`)
+        this.logger.log(`Create player DTO: ${(createPlayerDto)}`)
 
-        this.create(createPlayerDto)
+        await this.create(createPlayerDto)
     }
 
     async getAllPlayers(): Promise<Player[]> {
-        return this.players
+        return await this.playerModel.find().exec()
     }
 
-    async getPlayer(email: string): Promise<Player> {
-        const player = this.players.find(player => player.email === email)
+    async getPlayer(id: string): Promise<Player> {
+        const player = await this.playerModel.findOne({ _id: id }).exec()
 
         if (!player) {
             throw new NotFoundException('Player not found')
@@ -37,49 +40,42 @@ export class PlayersService {
         return player
     }
 
-    async updatePlayerNameById(id: string, updatePlayerDto: UpdatePlayerDto): Promise<Player> {
-        const player = this.players.find(player => player._id === id)
+    async updatePlayerById(id: string, updatePlayerDto: UpdatePlayerDto): Promise<Player> {
+        const player = await this.playerModel.findById({ _id: id })
 
         if (!player) {
             throw new NotFoundException('Player not found')
         }
 
-        this.update(player, updatePlayerDto)
+        const updatedPlayer = await this.update(updatePlayerDto)
 
-        return player
+        this.logger.log(`Create player DTO: ${(updatedPlayer)}`)
+
+        return updatedPlayer
     }
 
-    async deletePlayer(id: string): Promise<void> {
-        const player = this.players.find(player => player._id === id)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async deletePlayer(id: string): Promise<any> {
+        const player = await this.playerModel.findOne({ _id: id }).exec()
 
         if (!player) {
             throw new NotFoundException('Player not found')
         }
 
-        this.players = this.players.filter(player => player._id !== id)
+        return await this.playerModel.deleteOne({ _id: id }).exec()
     }
 
-    private create(createPlayerDto: CreatePlayerDto): void {
-        const { name, email, phoneNumber } = createPlayerDto
+    private async create(createPlayerDto: CreatePlayerDto): Promise<Player> {
+        const player = new this.playerModel(createPlayerDto)
 
-        const player: Player = {
-            _id: uuidV4(),
-            name,
-            email,
-            phoneNumber,
-            ranking: 'A',
-            rankingPosition: this.players.length + 1,
-            playerPhotoUrl: 'www.google.com.br/'
-        }
-
-        this.players.push(player)
+        return await player.save()
     }
 
-    private update(player: Player, updatePlayerDto: UpdatePlayerDto): void {
-        if (updatePlayerDto.name) {
-            player.name = updatePlayerDto.name
-        }
-
-        this.logger.log(`Player updated: ${JSON.stringify(player)}`)
+    private async update(updatePlayerDto: UpdatePlayerDto): Promise<Player> {
+        return await this.playerModel.findByIdAndUpdate(
+            { id: updatePlayerDto },
+            { $set: CreatePlayerDto },
+            { new: true }
+        ).exec()
     }
 }
