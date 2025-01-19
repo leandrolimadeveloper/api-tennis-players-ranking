@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { v4 as uuidV4 } from 'uuid'
 
 import { CreatePlayerDto } from './dtos/create-player.dto'
+import { UpdatePlayerDto } from './dtos/update-player.dto'
 import { Player } from './interfaces/player.interface'
 
 @Injectable()
@@ -26,6 +27,18 @@ export class PlayersService {
         return this.players
     }
 
+    async updatePlayerNameById(id: string, updatePlayerDto: UpdatePlayerDto): Promise<Player> {
+        const player = this.players.find(player => player._id === id)
+
+        if (!player) {
+            throw new BadRequestException('Player not found')
+        }
+
+        this.update(player, updatePlayerDto)
+
+        return player
+    }
+
     private create(createPlayerDto: CreatePlayerDto): void {
         const { name, email, phoneNumber } = createPlayerDto
 
@@ -35,10 +48,18 @@ export class PlayersService {
             email,
             phoneNumber,
             ranking: 'A',
-            rankingPosition: 1,
+            rankingPosition: this.players.length + 1,
             playerPhotoUrl: 'www.google.com.br/'
         }
 
         this.players.push(player)
+    }
+
+    private update(player: Player, updatePlayerDto: UpdatePlayerDto): void {
+        if (updatePlayerDto.name) {
+            player.name = updatePlayerDto.name
+        }
+
+        this.logger.log(`Player updated: ${JSON.stringify(player)}`)
     }
 }
