@@ -12,7 +12,7 @@ export class PlayersService {
 
     private readonly logger = new Logger(PlayersService.name)
 
-    async createPlayer(createPlayerDto: CreatePlayerDto): Promise<void> {
+    async createPlayer(createPlayerDto: CreatePlayerDto): Promise<Player> {
         const { email } = createPlayerDto
 
         const player = await this.playerModel.findOne({ email }).exec()
@@ -23,7 +23,7 @@ export class PlayersService {
 
         this.logger.log(`Create player DTO: ${(createPlayerDto)}`)
 
-        await this.create(createPlayerDto)
+        return await this.create(createPlayerDto)
     }
 
     async getAllPlayers(): Promise<Player[]> {
@@ -40,18 +40,16 @@ export class PlayersService {
         return player
     }
 
-    async updatePlayerById(id: string, updatePlayerDto: UpdatePlayerDto): Promise<Player> {
+    async updatePlayerById(id: string, updatePlayerDto: UpdatePlayerDto): Promise<void> {
         const player = await this.playerModel.findById({ _id: id })
 
         if (!player) {
             throw new NotFoundException('Player not found')
         }
 
-        const updatedPlayer = await this.update(updatePlayerDto)
+        const updatedPlayer = await this.playerModel.findByIdAndUpdate(player.id, updatePlayerDto)
 
         this.logger.log(`Create player DTO: ${(updatedPlayer)}`)
-
-        return updatedPlayer
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,13 +67,5 @@ export class PlayersService {
         const player = new this.playerModel(createPlayerDto)
 
         return await player.save()
-    }
-
-    private async update(updatePlayerDto: UpdatePlayerDto): Promise<Player> {
-        return await this.playerModel.findByIdAndUpdate(
-            { id: updatePlayerDto },
-            { $set: CreatePlayerDto },
-            { new: true }
-        ).exec()
     }
 }

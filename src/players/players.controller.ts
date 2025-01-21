@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UsePipes, ValidationPipe } from '@nestjs/common'
 
 import { CreatePlayerDto } from './dtos/create-player.dto'
 import { UpdatePlayerDto } from './dtos/update-player.dto'
@@ -8,6 +8,16 @@ import { PlayersService } from './players.service'
 @Controller('players')
 export class PlayersController {
     constructor(private readonly playersService: PlayersService) { }
+
+    @Post()
+    @UsePipes(ValidationPipe)
+    @HttpCode(HttpStatus.CREATED)
+    async createPlayer(
+        @Body() createPlayerDto: CreatePlayerDto
+    ) {
+
+        await this.playersService.createPlayer(createPlayerDto)
+    }
 
     @Get()
     async getAllPlayers() {
@@ -22,26 +32,13 @@ export class PlayersController {
     }
 
     @Patch(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
     async updatePlayerById(
         @Param('id') id: string,
         @Body() updatePlayerDto: UpdatePlayerDto
     ) {
 
         await this.playersService.updatePlayerById(id, updatePlayerDto)
-
-        return {
-            message: 'Player updated successfully',
-            updatePlayerDto
-        }
-    }
-
-    @Post()
-    @HttpCode(HttpStatus.CREATED)
-    async createPlayer(
-        @Body() createPlayerDto: CreatePlayerDto
-    ) {
-
-        await this.playersService.createPlayer(createPlayerDto)
     }
 
     @Delete(':id')
