@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
+import { Player } from 'src/players/interfaces/player.interface'
 import { PlayersService } from 'src/players/players.service'
 
 import { CreateCategoryDto } from './dtos/create-category.dto'
@@ -13,6 +14,8 @@ export class CategoriesService {
         @InjectModel('Category') private readonly categoryModel: Model<Category>,
         private readonly playersService: PlayersService
     ) { }
+
+    private readonly logger = new Logger(CategoriesService.name)
 
     async createCategory(createCategoryDto: CreateCategoryDto): Promise<Category> {
         const { name } = createCategoryDto
@@ -67,6 +70,7 @@ export class CategoriesService {
         const player = await this.playersService.getPlayer(playerId)
 
         const isPlayerInCategory = await this.categoryModel.findOne({ name: categoryName }).where('players').in(playerId)
+
         console.log('isPlayerInCategory:', isPlayerInCategory)
 
         if (isPlayerInCategory) {
@@ -78,6 +82,20 @@ export class CategoriesService {
         console.log('playerId:', playerId)
 
         console.log('category.players:', category)
+    }
+
+    async arePlayersInCategories(players: Player[]): Promise<boolean> {
+        const playersInCategories = await this.categoryModel.find({
+            players: { $all: players }
+        }).exec()
+
+        if (playersInCategories.length > 0) {
+            this.logger.log('Both player IDs are found in some category.')
+        } else {
+            this.logger.warn('One or more player IDs are missing in all categories.')
+        }
+
+        return playersInCategories.length > 0
     }
 
     private async findCategory(identifier: string) {
