@@ -45,4 +45,8 @@ export class ChallengesService {
         const createdChallenge = new this.challengeModel(createChallengeDto)
         return await createdChallenge.save()
     }
+
+    async getChallenges(): Promise<Challenge[]> {
+        return await this.challengeModel.find().exec()
+    }
 }

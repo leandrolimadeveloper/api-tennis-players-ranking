@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UsePipes, ValidationPipe } from '@nestjs/common'
+import { Body, Controller, Get, Post, UsePipes, ValidationPipe } from '@nestjs/common'
 
 import { ChallengesService } from './challenges.service'
 import { CreateChallengeDto } from './dtos/create-challenge.dto'
@@ -14,5 +14,10 @@ export class ChallengesController {
         @Body() createChallengeDto: CreateChallengeDto
     ): Promise<Challenge> {
         return await this.challengesService.createChallenge(createChallengeDto)
+    }
+
+    @Get()
+    async getChallenges(): Promise<Challenge[]> {
+        return await this.challengesService.getChallenges()
     }
 }
