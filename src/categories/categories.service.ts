@@ -44,6 +44,12 @@ export class CategoriesService {
         return category
     }
 
+    async findCategoryByPlayer(playerId: string): Promise<Category | null> {
+        const requesterPlayerCategory = await this.categoryModel.findOne({ players: playerId })
+
+        return requesterPlayerCategory
+    }
+
     async updateCategoryById(id: string, updateCategoryDto: UpdateCategoryDto): Promise<void> {
         const category = await this.findCategory(id)
 
@@ -60,8 +66,6 @@ export class CategoriesService {
 
         const category = await this.findCategory(categoryName)
 
-        console.log('category:', category)
-
         if (!category) {
             throw new NotFoundException('Category not found')
         }
@@ -71,31 +75,29 @@ export class CategoriesService {
 
         const isPlayerInCategory = await this.categoryModel.findOne({ name: categoryName }).where('players').in(playerId)
 
-        console.log('isPlayerInCategory:', isPlayerInCategory)
-
         if (isPlayerInCategory) {
             throw new BadRequestException(`Player ${player.name} is already registered in the category ${category.name}`)
         }
 
         category.players.push(playerId)
         await category.save()
-        console.log('playerId:', playerId)
-
-        console.log('category.players:', category)
     }
 
     async arePlayersInCategories(players: Player[]): Promise<boolean> {
-        const playersInCategories = await this.categoryModel.find({
-            players: { $all: players }
-        }).exec()
+        const playersInCategories = await Promise.all(
+            players.map(async (player) => {
+                return await this.categoryModel.exists({ players: player._id })
+            })
+        )
 
-        if (playersInCategories.length > 0) {
-            this.logger.log('Both player IDs are found in some category.')
-        } else {
-            this.logger.warn('One or more player IDs are missing in all categories.')
+        if (playersInCategories.includes(null)) {
+            this.logger.warn('One or more player IDs are missing in all')
+            return false
         }
 
-        return playersInCategories.length > 0
+        this.logger.log('All player IDs are found in some category')
+
+        return true
     }
 
     private async findCategory(identifier: string) {

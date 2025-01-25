@@ -6,7 +6,7 @@ export const PlayerSchema = new mongoose.Schema(
         name: { type: String },
         email: { type: String, unique: true },
         ranking: { type: String },
-        positionRanking: { type: Number },
+        score: { type: Number },
         playerPhotoUrl: { type: String }
     },
     {
