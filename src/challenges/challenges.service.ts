@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { CategoriesService } from 'src/categories/categories.service'
 import { PlayersService } from 'src/players/players.service'
 
 import { CreateChallengeDto } from './dtos/create-challenge.dto'
+import { UpdateChallengeDto } from './dtos/update-challenge.dto'
 import { Challenge } from './interfaces/challenge.interface'
 import { ChallengeStatus } from './interfaces/challenge-status.enum'
 
@@ -54,7 +55,7 @@ export class ChallengesService {
     }
 
     async getChallenges(): Promise<Challenge[]> {
-        return await this.challengeModel.find().exec()
+        return await this.challengeModel.find().populate('players').exec()
     }
 
     async getChallenge(id: string): Promise<Challenge> {
@@ -65,5 +66,33 @@ export class ChallengesService {
         }
 
         return challenge
+    }
+
+    async getChallengeByPlayerId(playerId: string): Promise<Challenge[]> {
+        if (!Types.ObjectId.isValid(playerId)) {
+            throw new BadRequestException('Invalid player ID')
+        }
+
+        const challengesByPlayer = await this.challengeModel.find({ requester: new Types.ObjectId(playerId) }).populate('players')
+
+        console.log('challengesByPlayer', challengesByPlayer)
+
+        if (challengesByPlayer.length === 0) {
+            throw new NotFoundException('Challenges for this requester player not found')
+        }
+
+        return challengesByPlayer
+    }
+
+    async updateChallenge(id: string, updateChallengeDto: UpdateChallengeDto): Promise<void> {
+        const challenge = await this.getChallenge(id)
+
+        console.log('challenge', challenge)
+
+        if (!challenge) {
+            throw new NotFoundException('Challenge not found')
+        }
+
+        await this.challengeModel.findByIdAndUpdate(challenge._id, updateChallengeDto)
     }
 }

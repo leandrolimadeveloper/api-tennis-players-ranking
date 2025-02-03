@@ -1,7 +1,7 @@
 export enum ChallengeStatus {
-    FINISHED = 'FINISHED',
-    PENDING = 'PENDING',
-    ACEPTED = 'ACEPTED',
-    REJECTED = 'REJECTED',
-    CANCELED = 'CANCELED'
+    FINISHED = 'FINALIZADO',
+    PENDING = 'PENDENTE',
+    ACEPTED = 'ACEITO',
+    REJECTED = 'REJEITADO',
+    CANCELED = 'CANCELADO'
 }
