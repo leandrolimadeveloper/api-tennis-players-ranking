@@ -1,10 +1,14 @@
 /* eslint-disable indent */
-import { IsDateString, IsIn } from 'class-validator'
+import { Transform } from 'class-transformer'
+import { IsDateString, IsIn, IsOptional } from 'class-validator'
 
 export class UpdateChallengeDto {
+    @IsOptional()
     @IsDateString()
     challengeDateTime: Date
 
+    @IsOptional()
+    @Transform(({ value }) => value.toUpperCase())
     @IsIn(['ACEITO', 'NEGADO', 'CANCELADO'], { message: 'Status must be ACEITO, NEGADO, or CANCELADO' })
     status: string
 }
