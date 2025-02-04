@@ -57,8 +57,6 @@ export class ChallengesService {
     async getChallenges(): Promise<Challenge[]> {
         const challenges = await this.challengeModel.find().populate('players').exec()
 
-        console.log('challenges: ', challenges)
-
         return challenges
     }
 
@@ -79,8 +77,6 @@ export class ChallengesService {
 
         const challengesByPlayer = await this.challengeModel.find({ requester: new Types.ObjectId(playerId) }).populate('players')
 
-        console.log('challengesByPlayer', challengesByPlayer)
-
         if (challengesByPlayer.length === 0) {
             throw new NotFoundException('Challenges for this requester player not found')
         }
@@ -90,8 +86,6 @@ export class ChallengesService {
 
     async updateChallenge(id: string, updateChallengeDto: UpdateChallengeDto): Promise<void> {
         const challenge = await this.getChallenge(id)
-
-        console.log('challenge', challenge)
 
         if (!challenge) {
             throw new NotFoundException('Challenge not found')
