@@ -55,11 +55,15 @@ export class ChallengesService {
     }
 
     async getChallenges(): Promise<Challenge[]> {
-        return await this.challengeModel.find().populate('players').exec()
+        const challenges = await this.challengeModel.find().populate('players').exec()
+
+        console.log('challenges: ', challenges)
+
+        return challenges
     }
 
     async getChallenge(id: string): Promise<Challenge> {
-        const challenge = await this.challengeModel.findOne({ _id: id }).exec()
+        const challenge = await (await this.challengeModel.findOne({ _id: id })).populate('players')
 
         if (!challenge) {
             throw new NotFoundException('Challenge not found')
@@ -94,5 +98,21 @@ export class ChallengesService {
         }
 
         await this.challengeModel.findByIdAndUpdate(challenge._id, updateChallengeDto)
+    }
+
+    async changeStatusToCancel(id: string) {
+        const challenge = await this.getChallenge(id)
+
+        if (!challenge) {
+            throw new NotFoundException('Challenge not found')
+        }
+
+        if (challenge.status === ChallengeStatus.CANCELED) {
+            throw new BadRequestException('Challenge status is already set to CANCELED')
+        }
+
+        challenge.status = ChallengeStatus.CANCELED
+
+        await this.challengeModel.findByIdAndUpdate(challenge._id, challenge)
     }
 }

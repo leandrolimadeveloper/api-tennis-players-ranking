@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common'
 import { ValidateParametersPipe } from 'src/common/pipes/validate-parameters.pipe'
 
 import { ChallengesService } from './challenges.service'
@@ -44,5 +44,12 @@ export class ChallengesController {
         @Param('id', ValidateParametersPipe) id: string
     ): Promise<void> {
         return await this.challengesService.updateChallenge(id, updateChallengeDto)
+    }
+
+    @Patch(':id')
+    async changeStatusToCancel(
+        @Param('id', ValidateParametersPipe) id: string
+    ): Promise<void> {
+        return await this.challengesService.changeStatusToCancel(id)
     }
 }
