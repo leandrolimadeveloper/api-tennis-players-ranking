@@ -13,12 +13,18 @@ export class PlayersService {
     private readonly logger = new Logger(PlayersService.name)
 
     async createPlayer(createPlayerDto: CreatePlayerDto): Promise<Player> {
-        const { email } = createPlayerDto
+        const { email, phoneNumber } = createPlayerDto
 
-        const player = await this.playerModel.findOne({ email }).exec()
+        const playerEmail = await this.playerModel.findOne({ email }).exec()
 
-        if (player) {
+        const playerPhoneNumber = await this.playerModel.findOne({ phoneNumber }).exec()
+
+        if (playerEmail) {
             throw new BadRequestException('Player with this email already exists')
+        }
+
+        if (playerPhoneNumber) {
+            throw new BadRequestException('Player with this phone number already exists')
         }
 
         this.logger.log(`Create player DTO: ${(createPlayerDto)}`)
