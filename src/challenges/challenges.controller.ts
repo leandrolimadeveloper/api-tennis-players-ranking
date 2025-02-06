@@ -4,7 +4,8 @@ import { ValidateParametersPipe } from 'src/common/pipes/validate-parameters.pip
 import { ChallengesService } from './challenges.service'
 import { CreateChallengeDto } from './dtos/create-challenge.dto'
 import { UpdateChallengeDto } from './dtos/update-challenge.dto'
-import { Challenge } from './interfaces/challenge.interface'
+import { Challenge, Match } from './interfaces/challenge.interface'
+import { LinkChallengeMatchDto } from './matches/dto/link-challenge-match.dto'
 
 @Controller('challenges')
 export class ChallengesController {
@@ -51,5 +52,18 @@ export class ChallengesController {
         @Param('id', ValidateParametersPipe) id: string
     ): Promise<void> {
         return await this.challengesService.changeStatusToCancel(id)
+    }
+
+    @Post(':id')
+    async assignMatchToChallenge(
+        @Body() linkChallengeMatchDto: LinkChallengeMatchDto,
+        @Param('id', ValidateParametersPipe) id: string
+    ): Promise<Match> {
+        return await this.challengesService.assignMatchToChallenge(id, linkChallengeMatchDto)
+    }
+
+    @Get('/matches')
+    async getMatches(): Promise<Match[]> {
+        return await this.getMatches()
     }
 }

@@ -1,4 +1,4 @@
-import { Document } from 'mongoose'
+import { Document, Types } from 'mongoose'
 import { Player } from 'src/players/interfaces/player.interface'
 
 import { ChallengeStatus } from './challenge-status.enum'
@@ -11,13 +11,14 @@ export interface Challenge extends Document {
     requester: Player
     category: string
     players: Array<Player>
-    match: Match
+    match: Match | Types.ObjectId | MatchResult[]
 }
 
 export interface Match extends Document {
     category: string
     players: Array<Player>
-    def: Player
+    winner: string
+    loser: string
     result: Array<MatchResult>
 }
 

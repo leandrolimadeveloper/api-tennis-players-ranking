@@ -6,13 +6,15 @@ import { PlayersService } from 'src/players/players.service'
 
 import { CreateChallengeDto } from './dtos/create-challenge.dto'
 import { UpdateChallengeDto } from './dtos/update-challenge.dto'
-import { Challenge } from './interfaces/challenge.interface'
+import { Challenge, Match } from './interfaces/challenge.interface'
 import { ChallengeStatus } from './interfaces/challenge-status.enum'
+import { LinkChallengeMatchDto } from './matches/dto/link-challenge-match.dto'
 
 @Injectable()
 export class ChallengesService {
     constructor(
         @InjectModel('Challenge') private readonly challengeModel: Model<Challenge>,
+        @InjectModel('Match') private readonly matchModel: Model<Match>,
         private readonly playersService: PlayersService,
         private readonly categoriesService: CategoriesService
     ) { }
@@ -55,13 +57,17 @@ export class ChallengesService {
     }
 
     async getChallenges(): Promise<Challenge[]> {
-        const challenges = await this.challengeModel.find().populate('players').exec()
+        const challenges = await this.challengeModel.find()
+            .populate('players')
+            .exec()
 
         return challenges
     }
 
     async getChallenge(id: string): Promise<Challenge> {
-        const challenge = await (await this.challengeModel.findOne({ _id: id })).populate('players')
+        const challenge = await this.challengeModel.findOne({ _id: id })
+            .populate('players')
+            .populate('match')
 
         if (!challenge) {
             throw new NotFoundException('Challenge not found')
@@ -108,5 +114,67 @@ export class ChallengesService {
         challenge.status = ChallengeStatus.CANCELED
 
         await this.challengeModel.findByIdAndUpdate(challenge._id, challenge)
+    }
+
+    async assignMatchToChallenge(id: string, linkChallengeMatchDto: LinkChallengeMatchDto): Promise<Match> {
+        const challenge = await this.getChallenge(id)
+
+        if (!challenge) {
+            throw new NotFoundException('Challenge not found')
+        }
+
+        // if (challenge.status === ChallengeStatus.FINISHED) {
+        //     throw new BadRequestException('This match has been finished')
+        // }
+
+        // if (challenge.status !== ChallengeStatus.ACEPTED) {
+        //     throw new BadRequestException('The match needs to have the status as ACCEPT')
+        // }
+
+        const { winner, loser, result } = linkChallengeMatchDto
+
+        const isWinnerInChallenge = challenge.players.some((player) => player._id.toString() === winner)
+        const isLoserInChallenge = challenge.players.some(player => player._id.toString() === loser)
+
+        if (!isWinnerInChallenge) {
+            throw new NotFoundException('Player winner is not present in the challenge')
+        }
+
+        if (!isLoserInChallenge) {
+            throw new NotFoundException('Player defeated is not present in the challenge')
+        }
+
+        if (!Array.isArray(result)) {
+            throw new BadRequestException('Result must be an array of sets')
+        }
+
+        const newMatch = new this.matchModel({
+            category: challenge.category,
+            players: challenge.players,
+            winner,
+            loser,
+            result
+        })
+
+        const savedMatch = await newMatch.save()
+
+        // Update challenge with match reference
+        challenge.status = ChallengeStatus.FINISHED
+        challenge.match = savedMatch._id as Types.ObjectId
+
+        console.log('challenge.match', challenge.match)
+        console.log('savedMatch', savedMatch)
+
+        console.log('challenge before', challenge)
+
+        await this.challengeModel.findByIdAndUpdate(challenge._id, challenge)
+
+        console.log('challenge after', challenge)
+
+        return savedMatch
+    }
+
+    async getMatches(): Promise<Match[]> {
+        return await this.matchModel.find().exec()
     }
 }
