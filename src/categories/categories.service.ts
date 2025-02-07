@@ -79,6 +79,15 @@ export class CategoriesService {
             throw new BadRequestException(`Player ${player.name} is already registered in the category ${category.name}`)
         }
 
+        const isPlayerInAnyCategory = await this.categoryModel.find({ players: player })
+
+        if (isPlayerInAnyCategory.length >= 1) {
+            throw new BadRequestException([
+                'It is not possible to assign category to player in other category.',
+                `Player is already registered in category ${isPlayerInAnyCategory.map(category => category.name)}`
+            ])
+        }
+
         category.players.push(playerId)
         await category.save()
     }
