@@ -31,7 +31,7 @@ export class CategoriesService {
     }
 
     async getCategories(): Promise<Array<Category>> {
-        return await this.categoryModel.find().populate('players').exec()
+        return await this.categoryModel.find().sort({ name: 1 }).populate('players').exec()
     }
 
     async getCategory(id: string): Promise<Category> {
