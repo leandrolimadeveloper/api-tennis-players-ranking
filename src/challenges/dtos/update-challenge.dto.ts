@@ -9,6 +9,6 @@ export class UpdateChallengeDto {
 
     @IsOptional()
     @Transform(({ value }) => value.toUpperCase())
-    @IsIn(['ACEITO', 'NEGADO', 'CANCELADO'], { message: 'Status must be ACEITO, NEGADO, or CANCELADO' })
+    @IsIn(['ACEITO', 'RECUSADO', 'CANCELADO'], { message: 'Status must be ACEITO, RECUSADO, or CANCELADO' })
     status: string
 }

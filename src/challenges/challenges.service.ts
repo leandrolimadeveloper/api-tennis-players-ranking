@@ -97,6 +97,30 @@ export class ChallengesService {
             throw new NotFoundException('Challenge not found')
         }
 
+        if (challenge.status === ChallengeStatus.ACCEPTED && updateChallengeDto.status.toUpperCase() !== ChallengeStatus.CANCELED) {
+            throw new BadRequestException('Challenge status is already set up as ACCEPTED. The unique change permitted is to cancel the challenge.')
+        }
+
+        if (challenge.status === ChallengeStatus.DECLINED && updateChallengeDto.status.toUpperCase() !== ChallengeStatus.CANCELED) {
+            throw new BadRequestException('Challenge status is already set up as DECLINED. There is nothing to do.')
+        }
+
+        if (challenge.status === ChallengeStatus.ACCEPTED) {
+            if (updateChallengeDto.status.toUpperCase() === ChallengeStatus.DECLINED) {
+                throw new BadRequestException('It is not possible to change a challenge status to DECLINED if it was already set up to ACCEPTED.')
+            }
+        }
+
+        if (challenge.status === ChallengeStatus.DECLINED) {
+            if (updateChallengeDto.status.toUpperCase() === ChallengeStatus.ACCEPTED) {
+                throw new BadRequestException('It is not possible to change a challenge status to ACCEPTED if it was already set up to DECLINED.')
+            }
+        }
+
+        if (challenge.status === ChallengeStatus.CANCELED) {
+            throw new BadRequestException('The challenge status is already set up as CANCELLED. There is nothing to do.')
+        }
+
         await this.challengeModel.findByIdAndUpdate(challenge._id, updateChallengeDto)
     }
 
@@ -123,13 +147,13 @@ export class ChallengesService {
             throw new NotFoundException('Challenge not found')
         }
 
-        // if (challenge.status === ChallengeStatus.FINISHED) {
-        //     throw new BadRequestException('This match has been finished')
-        // }
+        if (challenge.status === ChallengeStatus.FINISHED) {
+            throw new BadRequestException('This match has been finished')
+        }
 
-        // if (challenge.status !== ChallengeStatus.ACEPTED) {
-        //     throw new BadRequestException('The match needs to have the status as ACCEPT')
-        // }
+        if (challenge.status !== ChallengeStatus.ACCEPTED) {
+            throw new BadRequestException('The match needs to have the status as ACCEPT')
+        }
 
         const { winner, loser, result } = linkChallengeMatchDto
 
@@ -162,14 +186,7 @@ export class ChallengesService {
         challenge.status = ChallengeStatus.FINISHED
         challenge.match = savedMatch._id as Types.ObjectId
 
-        console.log('challenge.match', challenge.match)
-        console.log('savedMatch', savedMatch)
-
-        console.log('challenge before', challenge)
-
         await this.challengeModel.findByIdAndUpdate(challenge._id, challenge)
-
-        console.log('challenge after', challenge)
 
         return savedMatch
     }
