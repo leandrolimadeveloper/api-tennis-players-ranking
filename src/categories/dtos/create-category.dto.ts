@@ -1,6 +1,8 @@
 /* eslint-disable indent */
 import { ArrayMinSize, IsArray, IsNotEmpty, IsString } from 'class-validator'
 
+import { Event } from '../interfaces/category.interface'
+
 export class CreateCategoryDto {
     @IsNotEmpty()
     @IsString()
