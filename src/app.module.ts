@@ -3,8 +3,8 @@ import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 
 import { CategoriesModule } from './categories/categories.module'
+import { ChallengesModule } from './challenges/challenges.module'
 import { PlayersModule } from './players/players.module'
-import { ChallengesModule } from './challenges/challenges.module';
 
 @Module({
     imports: [
