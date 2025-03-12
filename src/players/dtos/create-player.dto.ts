@@ -12,4 +12,6 @@ export class CreatePlayerDto {
 
     @IsEmail()
     readonly email: string
+
+    readonly category: string
 }

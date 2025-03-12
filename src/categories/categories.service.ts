@@ -73,6 +73,8 @@ export class CategoriesService {
         // Verify if player exists
         const player = await this.playersService.getPlayer(playerId)
 
+        console.log('player before', player)
+
         const isPlayerInCategory = await this.categoryModel.findOne({ name: categoryName }).where('players').in(playerId)
 
         if (isPlayerInCategory) {
@@ -87,6 +89,10 @@ export class CategoriesService {
                 `Player is already registered in category ${isPlayerInAnyCategory.map(category => category.name)}`
             ])
         }
+
+        // Update category field in Player module
+        player.category = category.name
+        await player.save()
 
         category.players.push(playerId)
         await category.save()
