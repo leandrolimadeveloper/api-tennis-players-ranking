@@ -31,8 +31,6 @@ export class PlayersController {
     ): Promise<Player> {
         const player = await this.playersService.getPlayer(id)
 
-        console.log('player controller', player)
-
         return player
     }
 

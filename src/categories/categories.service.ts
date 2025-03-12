@@ -73,8 +73,6 @@ export class CategoriesService {
         // Verify if player exists
         const player = await this.playersService.getPlayer(playerId)
 
-        console.log('player before', player)
-
         const isPlayerInCategory = await this.categoryModel.findOne({ name: categoryName }).where('players').in(playerId)
 
         if (isPlayerInCategory) {

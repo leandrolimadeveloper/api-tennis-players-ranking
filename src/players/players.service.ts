@@ -39,8 +39,6 @@ export class PlayersService {
     async getPlayer(id: string): Promise<Player> {
         const player = await this.playerModel.findOne({ _id: id }).exec()
 
-        console.log('player', player)
-
         if (!player) {
             throw new NotFoundException('Player not found')
         }
