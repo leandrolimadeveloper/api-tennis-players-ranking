@@ -29,7 +29,11 @@ export class PlayersController {
     async getPlayer(
         @Param('id', ValidateParametersPipe) id: string
     ): Promise<Player> {
-        return await this.playersService.getPlayer(id)
+        const player = await this.playersService.getPlayer(id)
+
+        console.log('player controller', player)
+
+        return player
     }
 
     @Patch(':id')

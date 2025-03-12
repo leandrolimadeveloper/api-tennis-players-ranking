@@ -7,4 +7,5 @@ export interface Player extends Document {
     ranking: string
     score: number
     playerPhotoUrl: string
+    category: string
 }
