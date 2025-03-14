@@ -1,23 +1,22 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
 
 import { CreatePlayerDto } from './dtos/create-player.dto'
 import { UpdatePlayerDto } from './dtos/update-player.dto'
 import { Player } from './interfaces/player.interface'
+import { PlayerRepository } from './repositories/player.repository'
 
 @Injectable()
 export class PlayersService {
-    constructor(@InjectModel('Player') private readonly playerModel: Model<Player>) { }
+    constructor(private readonly playersRepository: PlayerRepository) { }
 
     private readonly logger = new Logger(PlayersService.name)
 
     async createPlayer(createPlayerDto: CreatePlayerDto): Promise<Player> {
         const { email, phoneNumber } = createPlayerDto
 
-        const playerEmail = await this.playerModel.findOne({ email }).exec()
+        const playerEmail = await this.playersRepository.findByEmail(email)
 
-        const playerPhoneNumber = await this.playerModel.findOne({ phoneNumber }).exec()
+        const playerPhoneNumber = await this.playersRepository.findByPhoneNumber(phoneNumber)
 
         if (playerEmail) {
             throw new BadRequestException('Player with this email already exists')
@@ -29,15 +28,15 @@ export class PlayersService {
 
         this.logger.log(`Create player DTO: ${JSON.stringify(createPlayerDto)}`)
 
-        return await this.create(createPlayerDto)
+        return await this.playersRepository.create(createPlayerDto)
     }
 
     async getAllPlayers(): Promise<Player[]> {
-        return await this.playerModel.find().exec()
+        return await this.playersRepository.findAll()
     }
 
     async getPlayer(id: string): Promise<Player> {
-        const player = await this.playerModel.findOne({ _id: id }).exec()
+        const player = await this.playersRepository.findById(id)
 
         if (!player) {
             throw new NotFoundException('Player not found')
@@ -47,31 +46,25 @@ export class PlayersService {
     }
 
     async updatePlayerById(id: string, updatePlayerDto: UpdatePlayerDto): Promise<void> {
-        const player = await this.playerModel.findById({ _id: id })
+        const player = await this.playersRepository.findById(id)
 
         if (!player) {
             throw new NotFoundException('Player not found')
         }
 
-        const updatedPlayer = await this.playerModel.findByIdAndUpdate(player.id, updatePlayerDto)
+        const updatedPlayer = await this.playersRepository.update(player.id, updatePlayerDto)
 
         this.logger.log(`Create player DTO: ${(updatedPlayer)}`)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async deletePlayer(id: string): Promise<any> {
-        const player = await this.playerModel.findOne({ _id: id }).exec()
+        const player = await this.playersRepository.findById(id)
 
         if (!player) {
             throw new NotFoundException('Player not found')
         }
 
-        return await this.playerModel.deleteOne({ _id: id }).exec()
-    }
-
-    private async create(createPlayerDto: CreatePlayerDto): Promise<Player> {
-        const player = new this.playerModel(createPlayerDto)
-
-        return await player.save()
+        return await this.playersRepository.delete(id)
     }
 }
