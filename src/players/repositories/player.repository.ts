@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import * as mongoose from 'mongoose'
 import { Model } from 'mongoose'
 
 import { Player } from '../interfaces/player.interface'
