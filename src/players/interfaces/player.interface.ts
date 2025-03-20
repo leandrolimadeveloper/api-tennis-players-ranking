@@ -8,4 +8,6 @@ export interface Player extends Document {
     score: number
     playerPhotoUrl: string
     category: string
+    hasWonChampionship?: boolean
+    championshipWins: number
 }

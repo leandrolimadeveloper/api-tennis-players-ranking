@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, Matches } from 'class-validator'
+import { IsBoolean, IsEmail, IsInt, IsNotEmpty, IsOptional, Matches, Min, ValidateIf } from 'class-validator'
 
 export class CreatePlayerDto {
     @IsNotEmpty()
@@ -12,4 +12,13 @@ export class CreatePlayerDto {
 
     @IsEmail()
     readonly email: string
+
+    @IsBoolean()
+    @IsOptional()
+    readonly hasWonChampionship: boolean
+
+    @ValidateIf((object => object.hasWonChampionship === true))
+    @IsInt()
+    @Min(1)
+    readonly championshipWins: number
 }
