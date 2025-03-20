@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { CategoriesService } from 'src/categories/categories.service'
+import { PlayerResultPoints } from 'src/players/interfaces/player-result-points.enum'
 import { PlayersService } from 'src/players/players.service'
 
 import { CreateChallengeDto } from './dtos/create-challenge.dto'
@@ -59,6 +60,7 @@ export class ChallengesService {
     async getChallenges(): Promise<Challenge[]> {
         const challenges = await this.challengeModel.find()
             .populate('players')
+            .sort({ createdAt: -1 })
             .exec()
 
         return challenges
@@ -95,6 +97,10 @@ export class ChallengesService {
 
         if (!challenge) {
             throw new NotFoundException('Challenge not found')
+        }
+
+        if (challenge.status === ChallengeStatus.FINISHED) {
+            throw new BadRequestException('This match has been finished')
         }
 
         if (challenge.status === ChallengeStatus.ACCEPTED && updateChallengeDto.status.toUpperCase() !== ChallengeStatus.CANCELED) {
@@ -179,6 +185,19 @@ export class ChallengesService {
             loser,
             result
         })
+
+        // Update player score
+        const winnerPlayer = newMatch.players.find((player) => player._id.toString() === winner)
+        const loserPlayer = newMatch.players.find((player) => player._id.toString() === loser)
+
+        winnerPlayer.score += PlayerResultPoints.MATCH_WINNER
+        loserPlayer.score -= PlayerResultPoints.MATCH_LOSER
+
+        await this.playersService.updatePlayerById(String(winnerPlayer._id), winnerPlayer)
+        await this.playersService.updatePlayerById(String(loserPlayer._id), loserPlayer)
+
+        await winnerPlayer.save()
+        await loserPlayer.save()
 
         const savedMatch = await newMatch.save()
 

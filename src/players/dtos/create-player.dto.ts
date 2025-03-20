@@ -13,6 +13,10 @@ export class CreatePlayerDto {
     @IsEmail()
     readonly email: string
 
+    @IsInt()
+    @IsOptional()
+    readonly score: number
+
     @IsBoolean()
     @IsOptional()
     readonly hasWonChampionship: boolean
