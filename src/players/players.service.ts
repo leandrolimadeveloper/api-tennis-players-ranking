@@ -33,7 +33,9 @@ export class PlayersService {
     }
 
     async getAllPlayers(): Promise<Player[]> {
-        return await this.playerModel.find().exec()
+        return await this.playerModel.find()
+            .sort({ createdAt: -1 })
+            .exec()
     }
 
     async getPlayer(id: string): Promise<Player> {

@@ -6,7 +6,7 @@ export const PlayerSchema = new mongoose.Schema(
         name: { type: String },
         email: { type: String, unique: true },
         ranking: { type: String },
-        score: { type: Number },
+        score: { type: Number, default: 200 },
         playerPhotoUrl: { type: String },
         category: { type: String, default: 'No category' },
         hasWonChampionship: { type: Boolean, default: false },
