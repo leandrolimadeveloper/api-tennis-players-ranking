@@ -4,6 +4,7 @@ import { PlayersModule } from 'src/players/players.module'
 
 import { CategoriesController } from './categories.controller'
 import { CategoriesService } from './categories.service'
+import { CategorySeedService } from './category-seed.service'
 import { CategorySchema } from './interfaces/category.schema'
 
 @Module({
@@ -12,7 +13,7 @@ import { CategorySchema } from './interfaces/category.schema'
         PlayersModule
     ],
     controllers: [CategoriesController],
-    providers: [CategoriesService],
+    providers: [CategoriesService, CategorySeedService],
     exports: [CategoriesService]
 })
 export class CategoriesModule { }

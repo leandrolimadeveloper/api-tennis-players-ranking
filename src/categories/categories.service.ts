@@ -4,7 +4,6 @@ import { Model, Types } from 'mongoose'
 import { Player } from 'src/players/interfaces/player.interface'
 import { PlayersService } from 'src/players/players.service'
 
-import { CreateCategoryDto } from './dtos/create-category.dto'
 import { UpdateCategoryDto } from './dtos/update-category.dto'
 import { Category } from './interfaces/category.interface'
 
@@ -16,19 +15,6 @@ export class CategoriesService {
     ) { }
 
     private readonly logger = new Logger(CategoriesService.name)
-
-    async createCategory(createCategoryDto: CreateCategoryDto): Promise<Category> {
-        const { name } = createCategoryDto
-
-        const category = await this.findCategory(name)
-
-        if (category) {
-            throw new BadRequestException('Category already exists')
-        }
-
-        const categoryCreated = new this.categoryModel(createCategoryDto)
-        return await categoryCreated.save()
-    }
 
     async getCategories(): Promise<Array<Category>> {
         return await this.categoryModel.find().sort({ name: 1 }).populate('players').exec()

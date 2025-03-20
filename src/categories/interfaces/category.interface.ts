@@ -1,9 +1,11 @@
 import { Document, Types } from 'mongoose'
 import { Player } from 'src/players/interfaces/player.interface'
 
+import { CategoryInfo, CategoryName } from './category-info.enum'
+
 export interface Category extends Document {
-    readonly name: string
-    description: string
+    name: CategoryName
+    description: CategoryInfo
     events: Array<Event>
     players: Array<Types.ObjectId | Player>
 

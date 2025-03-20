@@ -1,7 +1,11 @@
-import { IsNotEmpty, IsString } from 'class-validator'
+import { IsOptional, IsString } from 'class-validator'
 
 export class UpdateCategoryDto {
-    @IsNotEmpty()
+    @IsOptional()
+    @IsString()
+    readonly name: string
+
+    @IsOptional()
     @IsString()
     readonly description: string
 }
