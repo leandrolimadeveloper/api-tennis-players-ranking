@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { CategoriesService } from 'src/categories/categories.service'
+import { CheckCategoryByPlayerService } from 'src/categories/check-category-by-player.service'
 import { PlayerResultPoints } from 'src/players/interfaces/player-result-points.enum'
 import { PlayersService } from 'src/players/players.service'
 
@@ -17,7 +18,8 @@ export class ChallengesService {
         @InjectModel('Challenge') private readonly challengeModel: Model<Challenge>,
         @InjectModel('Match') private readonly matchModel: Model<Match>,
         private readonly playersService: PlayersService,
-        private readonly categoriesService: CategoriesService
+        private readonly categoriesService: CategoriesService,
+        private readonly checkCategoryByPlayerService: CheckCategoryByPlayerService
     ) { }
 
     async createChallenge(createChallengeDto: CreateChallengeDto): Promise<Challenge> {
@@ -191,13 +193,12 @@ export class ChallengesService {
         const loserPlayer = newMatch.players.find((player) => player._id.toString() === loser)
 
         winnerPlayer.score += PlayerResultPoints.MATCH_WINNER
-        loserPlayer.score -= PlayerResultPoints.MATCH_LOSER
 
-        await this.playersService.updatePlayerById(String(winnerPlayer._id), winnerPlayer)
-        await this.playersService.updatePlayerById(String(loserPlayer._id), loserPlayer)
-
-        await winnerPlayer.save()
-        await loserPlayer.save()
+        if (loserPlayer.score <= 0) {
+            loserPlayer.score = 0
+        } else {
+            loserPlayer.score -= PlayerResultPoints.MATCH_LOSER
+        }
 
         const savedMatch = await newMatch.save()
 
@@ -206,6 +207,16 @@ export class ChallengesService {
         challenge.match = savedMatch._id as Types.ObjectId
 
         await this.challengeModel.findByIdAndUpdate(challenge._id, challenge)
+
+        // Check and update category if necessary
+        await this.checkCategoryByPlayerService.checkCategoryByPlayer(winnerPlayer)
+        await this.checkCategoryByPlayerService.checkCategoryByPlayer(loserPlayer)
+
+        await this.playersService.updatePlayerById(String(winnerPlayer._id), winnerPlayer)
+        await this.playersService.updatePlayerById(String(loserPlayer._id), loserPlayer)
+
+        await winnerPlayer.save()
+        await loserPlayer.save()
 
         return savedMatch
     }
