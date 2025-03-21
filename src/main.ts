@@ -2,10 +2,14 @@ import { NestFactory } from '@nestjs/core'
 import * as momentTimezone from 'moment-timezone'
 
 import { AppModule } from './app.module'
+import { CategorySeedService } from './categories/category-seed.service'
 import { AllExceptionFilter } from './common/filters/http-exception.filter'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)
+
+    const categorySeedService = app.get(CategorySeedService)
+    await categorySeedService.seedCategories()
 
     app.useGlobalFilters(new AllExceptionFilter)
 

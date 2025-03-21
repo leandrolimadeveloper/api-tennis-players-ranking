@@ -1,8 +1,10 @@
 import * as mongoose from 'mongoose'
 
+import { CategoryInfo, CategoryName } from './category-info.enum'
+
 export const CategorySchema = new mongoose.Schema({
-    name: { type: String, unique: true },
-    description: { type: String },
+    name: { type: String, unique: true, enum: Object.values(CategoryName) },
+    description: { type: String, enum: Object.values(CategoryInfo) },
     events: [
         {
             name: { type: String },
