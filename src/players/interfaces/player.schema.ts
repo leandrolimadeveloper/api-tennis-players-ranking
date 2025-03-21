@@ -8,7 +8,7 @@ export const PlayerSchema = new mongoose.Schema(
         ranking: { type: String },
         score: { type: Number, default: 200, min: 0 },
         playerPhotoUrl: { type: String },
-        category: { type: String, default: 'No category' },
+        category: { type: String, default: 'E' },
         hasWonChampionship: { type: Boolean, default: false },
         championshipWins: { type: Number, default: 0, required: function () { return this.hasWonChampionship } }
     },
