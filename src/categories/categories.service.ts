@@ -6,6 +6,7 @@ import { PlayersService } from 'src/players/players.service'
 
 import { UpdateCategoryDto } from './dtos/update-category.dto'
 import { Category } from './interfaces/category.interface'
+import { CategoryName } from './interfaces/category-info.enum'
 
 @Injectable()
 export class CategoriesService {
@@ -76,6 +77,58 @@ export class CategoriesService {
 
         // Update category field in Player module
         player.category = category.name
+
+        // Update player score to the initial value of which category
+        const initialValueCategory = {
+            [CategoryName.B]: 2001,
+            [CategoryName.C]: 1001,
+            [CategoryName.D]: 501,
+            [CategoryName.E]: 200
+        }
+
+        const players = await this.playersService.getAllPlayers()
+        players.sort((a, b) => b.score - a.score)
+
+        console.log('players', players)
+
+        const top10Players = players.slice(0, 10)
+
+        console.log('top10Players', top10Players)
+
+        const playersInCategoryA = top10Players.filter(player => player.score > 2000)
+
+        console.log('playersInCategoryA', playersInCategoryA)
+
+        const remainingPlayersInCategoryB = players.filter(player => player.score > 2000 && !top10Players.includes(player))
+        remainingPlayersInCategoryB.forEach(player => player.category = CategoryName.B)
+
+        if (category.name === CategoryName.A) {
+            if (playersInCategoryA.length < 10) {
+                throw new BadRequestException('There are not enough players to assign category A')
+            } else {
+                player.score = initialValueCategory[CategoryName.A]
+            }
+        }
+
+        if (category.name === CategoryName.B) {
+            if (remainingPlayersInCategoryB) {
+                player.score = initialValueCategory[CategoryName.B]
+            }
+        }
+
+        if (category.name === CategoryName.C) {
+            player.score = initialValueCategory[CategoryName.C]
+        }
+
+        if (category.name === CategoryName.D) {
+            player.score = initialValueCategory[CategoryName.D]
+        }
+
+        if (category.name === CategoryName.E) {
+            player.score = initialValueCategory[CategoryName.E]
+        }
+
+        // Update player score
         await player.save()
 
         category.players.push(playerId)

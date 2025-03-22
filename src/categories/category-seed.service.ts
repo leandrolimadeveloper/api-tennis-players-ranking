@@ -3,6 +3,7 @@ import { Model } from 'mongoose'
 
 import { Category } from './interfaces/category.interface'
 import { CategoryInfo, CategoryName } from './interfaces/category-info.enum'
+
 export class CategorySeedService {
     constructor(@InjectModel('Category') private readonly categoryModel: Model<Category>) { }
 
