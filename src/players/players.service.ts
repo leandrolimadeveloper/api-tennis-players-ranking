@@ -34,7 +34,7 @@ export class PlayersService {
 
     async getAllPlayers(): Promise<Player[]> {
         return await this.playerModel.find()
-            .sort({ createdAt: -1 })
+            .sort({ score: -1 })
             .exec()
     }
 

@@ -4,12 +4,16 @@ import * as momentTimezone from 'moment-timezone'
 import { AppModule } from './app.module'
 import { CategorySeedService } from './categories/category-seed.service'
 import { AllExceptionFilter } from './common/filters/http-exception.filter'
+import { PlayerSeeder } from './players/seeds/player.seed'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)
 
     const categorySeedService = app.get(CategorySeedService)
     await categorySeedService.seedCategories()
+
+    const playerSeeder = app.get(PlayerSeeder)
+    await playerSeeder.seedPlayers(50)
 
     app.useGlobalFilters(new AllExceptionFilter)
 
